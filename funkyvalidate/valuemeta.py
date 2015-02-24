@@ -54,26 +54,6 @@ class ValueMeta(abc.ABCMeta):
         else:
             return abc.ABCMeta.__subclasscheck__(cls, subclass)
 
-    # ! INTENT is...
-    # This should be method on the class descendants of value-interface,
-    # ... but not appear on the instances of that class
-    # 
-    # ... can I achieve this via a classmethod on the metaclass?
-    def _assert(cls, instance, **keywords):
-
-        # Chain: keyword, cls attribute, default
-        exc_type = keywords.get('exception',
-            default=getattr(cls, 'exception',
-                default=ValueABCAssertionError)) #
-
-        getattr(cls, 'exception')
-        if not isinstance(instance, cls):
-            exc_type = getattr(cls, 'exception', default=ValueABCAssertionError)
-            raise exc_type(str.format(
-                "Invalid"
-            ))
-
-
 
 def _hasattr(C, attr):
     try:

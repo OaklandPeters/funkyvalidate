@@ -1,11 +1,25 @@
 
+Uncertain
+------------
+- ValueMeta: should fallthrough conditions trigger `return abc.ABCMeta.__instancecheck__(cls, instance)`, or instead `return NotImplemented`.
+- meets: has_concrete_method: should this use _hasattr or hasattr?
+- UnionMeta: does this actually need a __new__ ?
+
 Refactor
 -----------
-- Rename ValueMeta/ValueABC --> TypeCheckable and TypeCheckable
-
+- Rename ValueMeta/ValueABC --> TypeCheckableMeta and TypeCheckable
+- Rebuild individual files the unified onefile.py. Potential import order complications.
+    - errors.py
+    - shared.py
+    - meets.py
+    - valuemeta.py
+    - interface_type.py
+    - valueabc.py
+    - pep484.py
 
 Features
 -----------
+- Add basic metatypes: Any, Union, 
 - metatypes: Allow Union and validate() to accept 'None', and validate it into NoneType.
 - metatypes: Simplification inside Union: Union(single)-->single
 - metatypes: Simplification inside Union: Union(A, Union(B, C))-->Union(A, B, C)
@@ -27,3 +41,5 @@ Packaging
 Bugs
 -----------
 - Recursive loops occur when Union is used to instance/subclass check itself, and likely also when it is used on an inheritor (eg. isinstance(Union(NoneType, dict), Union))
+
+
