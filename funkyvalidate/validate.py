@@ -35,10 +35,14 @@ def validate(value, category=None, name="object"):
         return category.__validate__(value)
     elif isinstance(category, type):
         return type_check(value, category, name)
-    elif category is None:
+    elif category is None:  # Should this be here?
         return value
+    elif isinstance(category, tuple):
+        for i, elm in enumerate(category):
+            validate(elm, type, name="{0}[{1}]".format(name, i))
+        return type_check(value, category, name)
     else:
-        raise TypeError(
+        raise ValidationError(
             _complaint(category, (Validator, type, None), "category")
         )
 
