@@ -1,3 +1,8 @@
+import os
+
+import six
+
+from ..valuemeta import ValueMeta
 
 # Examples
 @six.add_metaclass(ValueMeta)

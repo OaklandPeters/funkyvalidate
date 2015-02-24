@@ -7,6 +7,7 @@ Uncertain
 
 Refactor
 -----------
+- Change ConcreteSet --> ConcreteSequence , with support for set operations (intersection, union)
 - Rename ValueMeta/ValueABC --> TypeCheckableMeta and TypeCheckable
 - Rebuild individual files the unified onefile.py. Potential import order complications.
     - errors.py

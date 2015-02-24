@@ -203,6 +203,13 @@ def validate(value, category=None, name="object"):
             _complaint(category, (Validator, type, None), "category")
         )
 
+def is_valid(value, category=None):
+    try:
+        validate(value, category)
+    except ValidationError:
+        return False
+    return True
+
 def type_check(value, category, name):
     if not isinstance(value, category):
         raise ValidationError(_complaint(value, category, name))
@@ -318,8 +325,30 @@ class UnionMeta(ValueMeta):
             cls.__name__, repr(getattr(cls, 'utypes', ''))
         )
 
+class ConcreteSet(collections.MutableSet):
+    """
+    Set-class, used by Union and Optional.
+    Holds types, subject to set-theoretic operations.
 
-class UnionBase(object):
+    Will eventually be used by Intersection and Not.
+    """
+    def __init__(self, *data):
+        self.data = set()
+        for elm in data:
+            self.add(elm)
+    def __contains__(self, other):
+        return other in self.data
+    def __iter__(self):
+        return iter(self.data)
+    def __len__(self):
+        return len(self)
+    def add(self, value):
+        self.data.add(validate_type(value))
+    def remove(self, value):
+        self.data.remove(value)
+
+
+class UnionBase(ConcreteSet):
     __metaclass__ = UnionMeta
     @classmethod
     def __instancecheck__(cls, instance):                
@@ -335,7 +364,7 @@ class UnionBase(object):
         )
 
 
-class Union(object):
+class Union(UnionBase):
     def __new__(cls, *utypes):
 
         _types = _validate_utypes(utypes)
@@ -355,39 +384,40 @@ class Optional(Union):
         Union.__init__(self, tuple([types.NoneType]), *_types)
 
 
-class Tuple(TypeLogic):
+class Tuple(ConcreteSet):
     """
     A tuple whose instances match the types passed into the constructor for Tuple.
     """
-    def __instancecheck__(self, instance):
+    @classmethod
+    def __instancecheck__(cls, instance):
         """
         Element-by-element comparison for equal-length tuples; otherwise false.
         @type: instance: Any
         @rtype: bool
         """
         if isinstance(instance, tuple):
-            if len(instance) == len(self.types):
+            if len(instance) == len(cls.types):
                 return all(
                     isinstance(element, _type)
                     for element, _type
-                    in zip(instance, self.types)
+                    in zip(instance, cls.types)
                 )
             else: # not same length
                 return False
         else:  # not a tuple
             return False
-
-    def __subclasscheck__(self, subclass):
+    @classmethod
+    def __subclasscheck__(cls, subclass):
         """
         @type: subclass: type
         @rtype: bool
         """
         if issubclass(subclass, tuple):
-            if len(subclass) == len(self.types):
+            if len(subclass) == len(cls._types):
                 return all(
                     issubclass(element, _type)
                     for element, _type
-                    in zip(subclass, self.types)
+                    in zip(subclass, cls._types)
                 )
             else: # not same length
                 return False
