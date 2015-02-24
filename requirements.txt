@@ -1,0 +1,2 @@
+# Example: Package hosted on PyPI
+six=1.9.0
