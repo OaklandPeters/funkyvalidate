@@ -366,8 +366,8 @@ class UnionBase(ConcreteSet):
 
 class Union(UnionBase):
     def __new__(cls, *utypes):
-
-        _types = _validate_utypes(utypes)
+        """Create and return a new class inheriting from Union."""
+        _types = handle_union_types(utypes)
         TypeUnion = type(
             'TypeUnion',
             (Union, ),
@@ -380,8 +380,9 @@ class Optional(Union):
     """
     `Optional[MyType]` is an alias of `Union[NoneType, MyType]`
     """
-    def __init__(self, *_types):
-        Union.__init__(self, tuple([types.NoneType]), *_types)
+    def __new__(cls, *utypes):
+        _types = tuple([types.NoneType]) + utypes
+        return Union(*_types)
 
 
 class Tuple(ConcreteSet):

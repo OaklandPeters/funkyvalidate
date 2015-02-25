@@ -1,6 +1,6 @@
 import os
 
-from valuemeta import ValueMeta
+from funkyvalidate import ValueMeta
 
 class ExistingDirectory(str):
     """

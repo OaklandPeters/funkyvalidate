@@ -2,7 +2,7 @@ import os
 
 import six
 
-from valuemeta import ValueMeta
+from funkyvalidate import ValueMeta
 
 @six.add_metaclass(ValueMeta)
 class ExistingFile(str):

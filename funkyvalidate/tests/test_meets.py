@@ -1,8 +1,10 @@
 import unittest
 import abc
 
-import meets
+from funkyvalidate import is_abstract_method, has_concrete_method, missing_abstracts, meets
 
+
+# Support object
 class ValidatorInterface(object):
     __metaclass__ = abc.ABCMeta
     exception = abc.abstractproperty(lambda *args, **kwargs: NotImplemented)
@@ -17,6 +19,7 @@ class ValidatorInterface(object):
             )
         return obj
 
+
 class MyValidator(object):
     exception = TypeError
     def message(self, obj, name=None):
@@ -30,32 +33,35 @@ class NotAValidator(object):
 
 
 class MeetsTests(unittest.TestCase):
+    """
+    Tests for functions to be contained in meets.py
+    """
 
     def test_is_abstract_method(self):
-        self.assertTrue(meets.is_abstract_method(ValidatorInterface.exception))
-        self.assertTrue(meets.is_abstract_method(ValidatorInterface.message))
-
-        self.assertTrue(not meets.is_abstract_method(ValidatorInterface.validate))
+        self.assertTrue(is_abstract_method(ValidatorInterface.exception))
+        self.assertTrue(is_abstract_method(ValidatorInterface.message))
+        self.assertFalse(is_abstract_method(ValidatorInterface.validate))
 
     def test_has_concrete_method(self):
-        self.assertTrue(not meets.has_concrete_method(ValidatorInterface, 'exception'))
-        self.assertTrue(not meets.has_concrete_method(ValidatorInterface, 'message'))
+        self.assertTrue(not has_concrete_method(ValidatorInterface, 'exception'))
+        self.assertTrue(not has_concrete_method(ValidatorInterface, 'message'))
 
-        self.assertTrue(meets.has_concrete_method(ValidatorInterface, 'validate'))
+        self.assertTrue(has_concrete_method(ValidatorInterface, 'validate'))
 
     def test_missing_abstracts(self):
         self.assertEqual(
-            set(meets.missing_abstracts(MyValidator, ValidatorInterface)),
+            set(missing_abstracts(MyValidator, ValidatorInterface)),
             set([])
         )
         self.assertEqual(
-            set(meets.missing_abstracts(NotAValidator, ValidatorInterface)),
+            set(missing_abstracts(NotAValidator, ValidatorInterface)),
             set(['message'])
         )
 
     def test_meets(self):
-        self.assertTrue(meets.meets(MyValidator, ValidatorInterface))
-        self.assertTrue(not meets.meets(NotAValidator, ValidatorInterface))
+        self.assertTrue(meets(MyValidator, ValidatorInterface))
+        self.assertTrue(not meets(NotAValidator, ValidatorInterface))
+
 
 if __name__ == "__main__":
     unittest.main()
