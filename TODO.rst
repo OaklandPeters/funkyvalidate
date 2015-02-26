@@ -20,7 +20,7 @@ Refactor
 
 Features
 -----------
-- Add basic metatypes: Any, Union, 
+- Add basic metatypes: Any, Union, Tuple
 - metatypes: Allow Union and validate() to accept 'None', and validate it into NoneType.
 - metatypes: Simplification inside Union: Union(single)-->single
 - metatypes: Simplification inside Union: Union(A, Union(B, C))-->Union(A, B, C)
@@ -29,7 +29,7 @@ Features
 
 Packaging
 -----------
-- Add git tag: 0.1
+- Testing for Nested
 - Fill in kruft: setup.py
 - Fill in kruft: README_TEMPLATE.rst: Motivation
 - Fill in kruft: README_TEMPLATE.rst: Why use this?

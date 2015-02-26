@@ -23,29 +23,54 @@ class Validator(object):
     __validate__ = abc.abstractmethod(lambda: NotImplemented)
 
 
-def validate(value, category=None, name="object"):
+def validate(value, category=None, name="object", inner=None):
     """
-    Generic function for validation
+    Generic function for validation. If an `inner` set of types is provided,
+    will validate each element of `value` against them.
     @type: value: Any
     @type: category: Optional[Validator, type]
     @type: name: Optional[str]
+    @type: inner: Optional[Validator, type]
     @rtype: Any
     """
-    if hasattr(category, '__validate__'):
-        return category.__validate__(value)
+    if hasattr(category, 'validate'):
+        result =  category.__validate__(value)
     elif isinstance(category, type):
-        return type_check(value, category, name)
+        result =  type_check(value, category, name)
     elif category is None:  # Should this be here?
-        return value
+        result =  value
     elif isinstance(category, tuple):
+        # A tuple of types. Ex. isinstance(myvar, (NoneType, str))
         for i, elm in enumerate(category):
             validate(elm, type, name="{0}[{1}]".format(name, i))
-        return type_check(value, category, name)
+        result =  type_check(value, category, name)
     else:
-        raise ValidationError(
+        raise TypeError(
             _complaint(category, (Validator, type, None), "category")
         )
 
+    if inner is not None:
+        validate_inner(value, inner, name="object")
+
+    return result
+
+
+def validate_inner(value, category=None, name="object"):
+    """
+    Exhausts an iterator, if inner is checked on an iterator.
+    @type: value: Any
+    @type: category: Optional[Validator, type]
+    @type: name: str
+    @rtype: None
+    """
+    validate(value, collections.Iterable)
+    if not isinstance(value, collections.Iterable):
+        raise TypeError(str.format(
+            "validate_inner exhausts iterators. Collect into a Sequence before calling."
+        ))
+
+    for i, elm in enumerate(value):
+        validate(elm, category, name="{0}[{1}]".format(name, i))
 def type_check(value, category, name):
     if not isinstance(value, category):
         raise ValidationError(_complaint(value, category, name))

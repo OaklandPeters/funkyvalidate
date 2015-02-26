@@ -180,32 +180,70 @@ class ValueABC(object):
 # ===================================
 # validate.py
 # ===================================
-def validate(value, category=None, name="object"):
+def validate(value, category=None, name="object", inner=None):
     """
-    Generic function for validation
+    Generic function for validation. If an `inner` set of types is provided,
+    will validate each element of `value` against them.
+    @type: value: Any
+    @type: category: Optional[Validator, type]
+    @type: name: Optional[str]
+    @type: inner: Optional[Validator, type]
+    @rtype: Any
+    """
+    if category is not None:
+        result = _validate(value, category=category, name=name)
+
+    if inner is not None:
+        _validate_inner(value, category=inner, name="object")
+
+    return result
+
+
+def _validate(value, category=None, name="object"):
+    """
+    Generic function for validation. If an `inner` set of types is provided,
+    will validate each element of `value` against them.
     @type: value: Any
     @type: category: Optional[Validator, type]
     @type: name: Optional[str]
     @rtype: Any
     """
-    if hasattr(category, '__validate__'):
+    if hasattr(category, 'validate'):
         return category.__validate__(value)
     elif isinstance(category, type):
         return type_check(value, category, name)
     elif category is None:  # Should this be here?
         return value
     elif isinstance(category, tuple):
+        # A tuple of types. Ex. isinstance(myvar, (NoneType, str))
         for i, elm in enumerate(category):
             validate(elm, type, name="{0}[{1}]".format(name, i))
         return type_check(value, category, name)
     else:
-        raise ValidationError(
+        raise TypeError(
             _complaint(category, (Validator, type, None), "category")
         )
 
-def is_valid(value, category=None):
+def _validate_inner(value, category=None, name="object"):
+    """
+    Exhausts an iterator, if inner is checked on an iterator.
+    @type: value: Any
+    @type: category: Optional[Validator, type]
+    @type: name: str
+    @rtype: None
+    """
+    validate(value, collections.Iterable)
+    if not isinstance(value, collections.Iterable):
+        raise TypeError(str.format(
+            "validate_inner exhausts iterators. Collect into a Sequence before calling."
+        ))
+
+    for i, elm in enumerate(value):
+        validate(elm, category, name="{0}[{1}]".format(name, i))
+
+def is_valid(value, category=None, inner=None):
     try:
-        validate(value, category)
+        validate(value, category=category, inner=inner)
     except ValidationError:
         return False
     return True
@@ -476,3 +514,34 @@ def handle_none_type(_types):
             yield types.NoneType
         else:
             yield element
+
+
+# ===================================
+# Speculative
+# ===================================
+def Nested(category, inner):
+    """
+    Class constructor.
+
+    raw_pairs = ((('slug', 'phoebe-adams'), ('slug', 'phoebe-lou-adams')),)
+
+    isinstance(raw_pairs, Nested(tuple, Nested(tuple, Nested(tuple, str))))
+    True
+    isinstance(raw_pairs, Nested(tuple, Nested(tuple, Nested(tuple, bool))))
+    False
+    """
+    # @todo: check category & inner: Union[type, tuple[type]]
+
+    class NestedClass(ValueABC):
+        _outer = category
+        _inner = inner
+        @classmethod
+        def __instancecheck__(cls, instance):
+            return is_valid(instance, category=cls._outer, inner=cls._inner)
+
+        @classmethod
+        def __subclasscheck__(cls, subclass):
+            return issubclass(subclass, cls._outer)
+    NestedClass.__name__ = "Nested" + category.__name__
+    return NestedClass
+
