@@ -7,6 +7,8 @@ import collections
 import abc
 import six
 
+from .errors import ValidationError
+
 __all__ = [
     'validate',
     'ValidationError',
@@ -55,6 +57,13 @@ def validate(value, category=None, name="object", inner=None):
     return result
 
 
+def is_valid(value, category=None, inner=None):
+    try:
+        validate(value, category=category, inner=inner)
+    except ValidationError:
+        return False
+    return True
+
 def validate_inner(value, category=None, name="object"):
     """
     Exhausts an iterator, if inner is checked on an iterator.
@@ -71,6 +80,7 @@ def validate_inner(value, category=None, name="object"):
 
     for i, elm in enumerate(value):
         validate(elm, category, name="{0}[{1}]".format(name, i))
+
 def type_check(value, category, name):
     if not isinstance(value, category):
         raise ValidationError(_complaint(value, category, name))

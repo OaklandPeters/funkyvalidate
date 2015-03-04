@@ -46,13 +46,15 @@ class ValueMeta(abc.ABCMeta):
             #if (cls.__instancecheck__ == ValueMeta.__instancecheck__):
             return cls.__instancecheck__(instance)
         else:
-            return abc.ABCMeta.__instancecheck__(cls, instance)
+            return is_ancestor(cls, type(instance))
+            #return abc.ABCMeta.__instancecheck__(cls, instance)
 
     def __subclasscheck__(cls, subclass):
         if _hasattr(cls, '__subclasscheck__'):
             return cls.__subclasscheck__(subclass)
         else:
-            return abc.ABCMeta.__subclasscheck__(cls, subclass)
+            return is_ancestor(cls, subclass)
+            #return abc.ABCMeta.__subclasscheck__(cls, subclass)
 
 
 def _hasattr(C, attr):
@@ -71,6 +73,20 @@ class abstractclassmethod(classmethod):
         super(abstractclassmethod, self).__init__(callable)
 
 
+
+def is_ancestor(cls, subclass):
+    """
+    @type: cls: type
+    @type: subclass: type
+    @rtype: bool
+    """
+    try:
+        return cls in subclass.__mro__
+    except AttributeError:
+        # raise same exception as issubclass(instance, klass)
+        raise TypeError(str.format(
+            "argument 1 must be a class."
+        ))
 
 
 

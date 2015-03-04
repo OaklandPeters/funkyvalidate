@@ -3,7 +3,7 @@
 import unittest
 import collections
 
-from .pep484 import Any, Union, UnionMeta
+from funkyvalidate import Any, Union, UnionMeta
 
 class MyClass(object):
     pass
@@ -40,8 +40,9 @@ class AnyTestCase(unittest.TestCase):
             lambda: NotImplemented, NotImplemented
         ]
         for obj in valid:
-            with self.assertRaises(TypeError):
-                issubclass(obj, Any)
+            self.assertTrue(obj, Any)
+            # with self.assertRaises(TypeError):
+            #     issubclass(obj, Any)
 
 class TargetedTestCase(unittest.TestCase):
     def test_basic(self):
@@ -134,19 +135,22 @@ class TargetedTestCase(unittest.TestCase):
         larger = Union(list, tuple, str, dict)
         overlap = Union(list, tuple, set)
         nonoverlap = Union(dict, bool)
+        ancestor = Union(collections.Sequence, bool)
 
-        self.assert(issubclass(base, smaller))
-        self.assert(issubclass(smaller, base))
+        self.assertFalse(issubclass(base, smaller))
+        self.assertTrue(issubclass(smaller, base))
 
-        self.assert(issubclass(base, larger))
-        self.assert(issubclass(larger, base))
+        self.assertTrue(issubclass(base, larger))
+        self.assertTrue(issubclass(larger, base))
 
-        self.assert(issubclass(base, overlap))
-        self.assert(issubclass(overlap, base))
+        self.assertTrue(issubclass(base, overlap))
+        self.assertTrue(issubclass(overlap, base))
 
-        self.assert(issubclass(base, nonoverlap))
-        self.assert(issubclass(nonoverlap, base))
+        self.assertFalse(issubclass(base, nonoverlap))
+        self.assertFalse(issubclass(nonoverlap, base))
 
+        self.assertTrue(issubclass(base, ancestor))
+        self.assertFalse(issubclass(ancestor, base))
 
     #     self.assertTrue(issubclass(combined, Union(list, tuple, )))
 
