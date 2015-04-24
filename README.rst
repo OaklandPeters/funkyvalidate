@@ -1,6 +1,10 @@
 FunkyValidate
 ================
 
+fv_oop/
+----------
+This is notes on a more complicated class/metaclass/inheritance based approach. Not
+really intended for usage (at least yet).
 
 
 Synopsis

@@ -1,6 +1,17 @@
 """
 Single file version.
 
+
+@todo: promises(..., immediate=False)
+    promises_immediate(input):
+        cache = list(imap(validate, input))
+        return iter(cache)
+    promises_deferred(input):
+        # collect and check into sequence, then return iterator
+        for elm in input:
+            checked = validate(elm)
+            yield elm
+        # 
 """
 
 import collections
@@ -545,3 +556,22 @@ def Nested(category, inner):
     NestedClass.__name__ = "Nested" + category.__name__
     return NestedClass
 
+
+def PairsIterator(value):
+    """
+    Dispatches over common iteration circumatances
+    Makes mappings return (key, value)
+    Makes Iterable return (index, value)
+    Makes non-Iterable return (None, value)
+    """
+    if isinstance(value, Atomic):
+        return iter(((None, value), ))
+    elif isinstance(value, collections.Mapping):
+        return iter(collections.Mapping.items(value))
+    elif isinstance(value, collections.Iterable):
+        return enumerate(value)
+    else:
+        raise TypeError(str.format(
+            "This should never happen, for type '{0}'",
+            type(value).__name__
+        ))

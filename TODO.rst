@@ -1,4 +1,9 @@
 
+Priority
+------------
+- Combine clever_validate.py into onefile.py
+- Implement the new promises()
+
 Uncertain
 ------------
 - ValueMeta: should fallthrough conditions trigger `return abc.ABCMeta.__instancecheck__(cls, instance)`, or instead `return NotImplemented`.

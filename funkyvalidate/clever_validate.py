@@ -174,14 +174,39 @@ def validate_mapping(mapping, category, name='object', **keywords):  # pylint: d
 
 def promises(iterable, outer, **keywords):
     """
-    @type: iterable
+    @type: iterable: Iterable
+    @type: outer: TypeSpec
+    @type: keywords: Mapping
+    @rtype: Iterator
+    """
+    if keywords.pop('immediate', False):
+        return promises_immediate(iterable, outer, **keywords)
+    else:
+        return promises_deferred(iterable, outer, **keywords)
+
+def promises_immediate(iterable, outer, **keywords):
+    """
+    @type: iterable: Iterable
+    @type: outer: TypeSpec
+    @type: keywords: Mapping
+    @rtype: Iterator
+    """
+    cache = list(promises_deferred(iterable, outer, **keywords))
+    return iter(cache)
+
+def promises_deferred(iterable, outer, **keywords):
+    """
+    @todo: Possible: could use pairs() to switch over iteration types
+        (eg Mapping --> items, Sequence --> )
+
+    @type: iterable: Iterable
+    @type: outer: TypeSpec
+    @type: keywords: Mapping
+    @rtype: Iterator
     """
     for i, elm in enumerate(iterable):
         kwargs = _update_name_in_keywords(i, keywords)
         yield validate(elm, outer, **kwargs)
-
-
-
 
 def _update_name_in_keywords(index, keywords):
     """
@@ -298,5 +323,3 @@ def type_check(value, category, name):
     if not isinstance(value, category):
         raise ValidationError(_complaint(value, category, name))
     return value
-
-
